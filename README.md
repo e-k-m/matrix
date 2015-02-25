@@ -1,5 +1,5 @@
-Linear
-========
+Matrix
+======
 
 Simple C matrix implementation.
 
