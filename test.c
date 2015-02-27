@@ -82,16 +82,19 @@ test_matrix_set_from_array() {
   // Setup
   matrix_t *a = matrix_new(3, 3);
   matrix_t *b = matrix_new(3, 3);
+
   double data[] = {1.0, 2.0, 3.0, 
 		   4.0, 5.0, 6.0,
 		   7.0, 8.0, 9.0};
+
   matrix_set_from_array(a, data, sizeof(data) / sizeof(*data));
   b->data = data;
 
   // Assertions
   assert(matrix_equal(a, b) == 1);
   matrix_destroy(a);
-  free(b); // since not alloc of data
+  b->data = NULL;
+  matrix_destroy(b);  
 }
 
 static void
@@ -226,6 +229,7 @@ test_matrix_scale() {
 
   matrix_destroy(a);
   matrix_destroy(b);
+  matrix_destroy(c);
 }
 
 
