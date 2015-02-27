@@ -88,12 +88,14 @@ test_matrix_set_from_array() {
 		   7.0, 8.0, 9.0};
 
   matrix_set_from_array(a, data, sizeof(data) / sizeof(*data));
+  
+  double *ptr = b->data;
   b->data = data;
 
   // Assertions
   assert(matrix_equal(a, b) == 1);
   matrix_destroy(a);
-  b->data = NULL;
+  b->data = ptr;
   matrix_destroy(b);  
 }
 

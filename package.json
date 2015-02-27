@@ -1,7 +1,7 @@
 {
   "name": "matrix",
   "version": "0.0.1",
-  "repo": "e-k-m/linear",
+  "repo": "e-k-m/matrix",
   "description": "C matrix implementation",
   "keywords": ["matrix"],
   "license": "MIT",
