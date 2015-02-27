@@ -1,375 +1,300 @@
+
+//
+// matrix.c
+//
+// Copyright (c) 2015 e-k-m
+//
+
 #include "matrix.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-/*===========================================================================
- * assert
- * If the assertion is non-zero (i.e. true), then it returns.
- * If the assertion is zero (i.e. false), then it display the string and
- * aborts the program.
- * This is ment to act like Python's assert keyword.
- *=========================================================================*/
-void assert(int assertion, char* message) {
-    if (assertion == 0) {
-        fprintf(stderr, "%s\n", message);
-        exit(1);
-    }
+/*
+ * Allocate a new matrix_t. NULL on failure.
+ */
+
+matrix_t * 
+matrix_new(int height, int width) {
+  matrix_t  *self;
+  if (!(self = (matrix_t *) malloc(sizeof(matrix_t))))
+    return NULL;
+
+  self->width = width;
+  self->height = height;
+  if(!(self->data = (double *) malloc(sizeof(double) * width * height)))
+    return NULL;
+
+  memset(self->data, 0.0, width * height * sizeof(double));
+
+  return self;
 }
 
-/*===========================================================================
- * readMatrix
- * Reads a file containing a Matrix
- *=========================================================================*/
-matrix* readMatrix(char* filename) {
-    FILE* fh;
-    matrix* data;
-    float myValue;
-    int width, height, i, elements;
-    int scan_test;
+
+/*
+ * Copy a matrix.
+ */
+
+matrix_t * 
+matrix_copy(matrix_t *self) {
+  return matrix_scale(self, 1);
+}
+
+/*
+ * Free the matrix.
+ */
+
+void 
+matrix_destroy(matrix_t *self) {
+  if (self) {
+    if (self->data) free(self->data);
+    free(self);
+  }
+  return;
+}
+
+/*
+ * Print the matrix
+ */
+
+void
+matrix_print(matrix_t *self) {
+  int i, j;
+  double *ptr = self->data;
+  printf("%d %d\n", self->height, self->width);
+  for (i = 0; i < self->height; i++) {
+    for (j = 0; j < self->width; j++) {
+      printf(" %9.6f", *(ptr++));
+    }
+    printf("\n");
+  }
+  return;
+}
+
+/*
+ * Allocate a new identity matrix_t.
+ */
+
+matrix_t *
+matrix_eye(int n) {
+  int i;
+  matrix_t *self;
+  double *ptr;
+
+  self = matrix_new(n, n);
+  ptr = self->data;
+  for (i = 0; i < n; i++) {
+    *ptr = 1.0;
+    ptr += n + 1;
+  }
+  return self;
+}
+
+void
+matrix_set_from_array(matrix_t *self, double *data, size_t size) {
+  double *ptr = self->data;
+  double *ptr_d = data;
+  for (size_t i = 0; i < size; i++) {
+    *ptr = *ptr_d;
+    ptr++;
+    ptr_d++;
+  }
+}
+
+/*
+ * Given an "m rows by n columns" matrix, return the sum of the 
+ * elements along the diagonal.
+ */
+
+double 
+matrix_trace(matrix_t *self) {
+  int i;
+  int size;
+  double *ptr = self->data;
+  double sum = 0.0;
+
+  if (self->height < self->width) {
+    size = self->height;
+  }
+  else {
+    size = self->width;
+  }
+
+  for (i = 0; i < size; i++) {
+    sum += *ptr;
+    ptr += self->width + 1;
+  }
+
+  return sum;
+}
+
+/*
+ * Given an "m rows by n columns" matrix, return a matrix with 
+ * 1 row and n columns, where each element represents the mean of 
+ * that that full column.
+ */
+
+matrix_t * 
+matrix_mean(matrix_t *self) {
+    int i, j;
     double *ptr;
+    matrix_t *out;
 
-    if ((fh = fopen(filename, "r")) == NULL) {
-        fprintf(stderr, "Error: Cannot open %s\n", filename);
-        exit(1);
-    }
+    out = matrix_new(1, self->width);
 
-    scan_test = fscanf(fh, "%d", &width);
-    assert(scan_test != EOF, "Failed to read from file.");
-
-    scan_test = fscanf(fh, "%d", &height);
-    assert(scan_test != EOF, "Failed to read from file.");
-
-    data = makeMatrix(width, height);
-    elements = width * height;
-
-    ptr = data->data;
-    for (i = 0; i < elements; i++) {
-        scan_test = fscanf(fh, "%f", &myValue);
-        assert(scan_test != EOF, "Failed to read from file. File is incomplete.");
-        *(ptr++) = myValue;
-    }
-
-    fclose(fh);
-    return data;
-}
-
-/*===========================================================================
- * makeMatrix
- * Makes a matrix with a width and height parameters.
- *=========================================================================*/
-matrix* makeMatrix(int width, int height) {
-    matrix* out;
-    assert(width > 0 && height > 0, "New matrix must be at least a 1 by 1");
-    out = (matrix*) malloc(sizeof(matrix));
-
-    assert(out != NULL, "Out of memory.");
-
-    out->width = width;
-    out->height = height;
-    out->data = (double*) malloc(sizeof(double) * width * height);
-
-    assert(out->data != NULL, "Out of memory.");
-
-    memset(out->data, 0.0, width * height * sizeof(double));
-
-    return out;
-}
-
-/*===========================================================================
- * copyMatrix
- * Copies a matrix. This function uses scaleMatrix, because scaling matrix
- * by 1 is the same as a copy.
- *=========================================================================*/
-matrix* copyMatrix(matrix* m) {
-    return scaleMatrix(m, 1);
-}
-
-/*===========================================================================
- * freeMatrix
- * Frees the resources of a matrix
- *=========================================================================*/
-void freeMatrix(matrix* m) {
-    if (m != NULL) {
-        if (m->data != NULL) {
-            free(m->data);
-            m->data = NULL;
-        }
-
-        free(m);
-        m = NULL;
-    }
-    return;
-}
-
-/*===========================================================================
- * writeMatrix
- * Write a matrix to a file.
- *=========================================================================*/
-void writeMatrix(matrix* m, char* filename) {
-    FILE* fh;
-    int i, j;
-    double* ptr = m->data;
-
-    if ((fh = fopen(filename, "w")) == NULL) {
-        fprintf(stderr, "Error: Cannot open %s\n", filename);
-        exit(1);
-    }
-
-    fprintf(fh, "%d %d\n", m->width, m->height);
-
-    for (i = 0; i < m->height; i++) {
-        for (j = 0; j < m->width; j++) {
-            fprintf(fh, " %2.5f", *(ptr++));
-        }
-        fprintf(fh, "\n");
-    }
-
-    fclose(fh);
-    return;
-}
-
-/*===========================================================================
- * printMatrix
- * Prints a matrix. Great for debugging.
- *=========================================================================*/
-void printMatrix(matrix* m) {
-    int i, j;
-    double* ptr = m->data;
-    printf("%d %d\n", m->width, m->height);
-    for (i = 0; i < m->height; i++) {
-        for (j = 0; j < m->width; j++) {
-            printf(" %9.6f", *(ptr++));
-        }
-        printf("\n");
-    }
-    return;
-}
-
-/*===========================================================================
- * eyeMatrix
- * Returns an identity matrix of size n by n, where n is the input
- * parameter.
- *=========================================================================*/
-matrix* eyeMatrix(int n) {
-    int i;
-    matrix *out;
-    double* ptr;
-
-    assert(n > 0, "Identity matrix must have value greater than zero.");
-
-    out = makeMatrix(n, n);
-    ptr = out->data;
-    for (i = 0; i < n; i++) {
-        *ptr = 1.0;
-        ptr += n + 1;
-    }
-
-    return out;
-}
-
-/*===========================================================================
- * traceMatrix
- * Given an "m rows by n columns" matrix, it returns the sum of the elements
- * along the diagonal. This is know as the matrix 'trace'.
- *=========================================================================*/
-double traceMatrix(matrix* m) {
-    int i;
-    int size;
-    double* ptr = m->data;
-    double sum = 0.0;
-
-    if (m->height < m->width) {
-        size = m->height;
-    }
-    else {
-        size = m->width;
-    }
-
-    for (i = 0; i < size; i++) {
-        sum += *ptr;
-        ptr += m->width + 1;
-    }
-
-    return sum;
-}
-
-/*===========================================================================
- * meanMatrix
- * Given an "m rows by n columns" matrix, it returns a matrix with 1 row and
- * n columns, where each element represents the mean of that full column.
- *=========================================================================*/
-matrix* meanMatrix(matrix* m) {
-    int i, j;
-    double* ptr;
-    matrix* out;
-
-    assert(m->height > 0, "Height of matrix cannot be zero.");
-
-    out = makeMatrix(m->width, 1);
-
-    for (i = 0; i < m->width; i++) {
+    for (i = 0; i < self->width; i++) {
         out->data[i] = 0.0;
-        ptr = &m->data[i];
-        for (j = 0; j < m->height; j++) {
+        ptr = &self->data[i];
+        for (j = 0; j < self->height; j++) {
             out->data[i] += *ptr;
             ptr += out->width;
         }
-        out->data[i] /= (double) m->height;
+        out->data[i] /= (double) self->height;
     }
     return out;
 }
 
-/*===========================================================================
- * covarianceMatrix
- * Given an "m rows by n columns" matrix, it returns a matrix with n row and
- * n columns, where each element represents covariance of 2 columns.
- *=========================================================================*/
-matrix* covarianceMatrix(matrix* m) {
-    int i, j, k = 0; // L = 0;
-    matrix* out;
-    matrix* mean;
-    double* ptrA;
-    double* ptrB;
-    double* ptrOut;
+/*
+ * Given an "m rows by n columns" matrix, returns a matrix with 
+ * n row and n columns, where each element represents covariance of 
+ * 2 columns. TODO(how does this work?)
+ */
 
-    assert(m->height > 1, "Height of matrix cannot be zero or one.");
+matrix_t *
+matrix_covariance(matrix_t *self) {
+  int i, j, k = 0;
+  matrix_t* out;
+  matrix_t* mean;
+  double *ptr_a;
+  double *ptr_b;
+  double *ptr_out;
 
-    mean = meanMatrix(m);
-    out = makeMatrix(m->width, m->width);
-    ptrOut = out->data;
+  mean = matrix_mean(self);
+  out = matrix_new(self->width, self->width);
+  ptr_out = out->data;
 
-    for (i = 0; i < m->width; i++) {
-        for (j = 0; j < m->width; j++) {
-             ptrA = &m->data[i];
-             ptrB = &m->data[j];
-             *ptrOut = 0.0;
-             for (k = 0; k < m->height; k++) {
-                 *ptrOut += (*ptrA - mean->data[i]) * (*ptrB - mean->data[j]);
-                 ptrA += m->width;
-                 ptrB += m->width;
-             }
-             *ptrOut /= m->height - 1;
-             ptrOut++;
-        }
+  for (i = 0; i < self->width; i++) {
+    for (j = 0; j < self->width; j++) {
+      ptr_a = &self->data[i];
+      ptr_b = &self->data[j];
+      *ptr_out = 0.0;
+      for (k = 0; k < self->height; k++) {
+	*ptr_out += (*ptr_a - mean->data[i]) * (*ptr_b - mean->data[j]);
+	ptr_a += self->width;
+	ptr_b += self->width;
+      }
+      *ptr_out /= self->height - 1;
+      ptr_out++;
     }
-
-    freeMatrix(mean);
-    return out;
+  }
+  matrix_destroy(mean);
+  return out;
 }
 
-/*===========================================================================
- * transposeMatrix
+/*
  * Given an matrix, returns the transpose.
- *=========================================================================*/
-matrix* transposeMatrix(matrix* m) {
-    matrix* out = makeMatrix(m->height, m->width);
-    double* ptrOut;
-    double* ptrM = m->data;
-    int i, j;
+ */
 
-    for (i = 0; i < m->height; i++) {
-        ptrOut = &out->data[i];
-        for (j = 0; j < m->width; j++) {
-            *ptrOut = *ptrM;
-            ptrM++;
-            ptrOut += out->width;
-        }
+matrix_t *
+matrix_transpose(matrix_t *self) {
+  matrix_t *out = matrix_new(self->height, self->width);
+  double* ptr_out;
+  double* ptr = self->data;
+  int i, j;
+
+  for (i = 0; i < self->height; i++) {
+    ptr_out = &out->data[i];
+    for (j = 0; j < self->width; j++) {
+      *ptr_out = *ptr;
+      ptr++;
+      ptr_out += out->width;
     }
-
-    return out;
+  }
+  return out;
 }
 
-/*===========================================================================
- * multiplyMatrix
- * Given a two matrices, returns the multiplication of the two.
- *=========================================================================*/
-matrix* multiplyMatrix(matrix* a, matrix* b) {
-    int i, j, k;
-    matrix* out;
-    double* ptrOut;
-    double* ptrA;
-    double* ptrB;
+/*
+ * Given two matrices, returns the multiplication of the two.
+ */
 
-    assert(a->width == b->height, "Matrices have incorrect dimensions. a->width != b->height");
+matrix_t *
+matrix_multiply(matrix_t *a, matrix_t *b) {
+  int i, j, k;
+  matrix_t *out;
+  double *ptr_out;
+  double *ptr_a;
+  double *ptr_b;
 
-    out = makeMatrix(b->width, a->height);
-    ptrOut = out->data;
+  out = matrix_new(a->height, b->width);
+  ptr_out = out->data;
 
-    for (i = 0; i < a->height; i++) {
+  for (i = 0; i < a->height; i++) {
 
-        for (j = 0; j < b->width; j++) {
-            ptrA = &a->data[ i * a->width ];
-            ptrB = &b->data[ j ];
+    for (j = 0; j < b->width; j++) {
+      ptr_a = &a->data[ i * a->width ];
+      ptr_b = &b->data[ j ];
 
-            *ptrOut = 0;
-            for (k = 0; k < a->width; k++) {
-                *ptrOut += *ptrA * *ptrB;
-                ptrA++;
-                ptrB += b->width;
-            }
-            ptrOut++;
-        }
+      *ptr_out = 0;
+      for (k = 0; k < a->width; k++) {
+	*ptr_out += *ptr_a * *ptr_b;
+	ptr_a++;
+	ptr_b += b->width;
+      }
+      ptr_out++;
     }
-
-    return out;
+  }
+  return out;
 }
 
-/*===========================================================================
- * scaleMatrix
- * Given a matrix and a double value, this returns a new matrix where each
- * element in the input matrix is multiplied by the double value
- *=========================================================================*/
-matrix* scaleMatrix(matrix* m, double value) {
-    int i, elements = m->width * m->height;
-    matrix* out = makeMatrix(m->width, m->height);
-    double* ptrM = m->data;
-    double* ptrOut = out->data;
+/*
+ * Given a matrix and a double value, this returns a new matrix where 
+ * each element in the input matrix is multiplied by the double value
+ */
 
-    for (i = 0; i < elements; i++) {
-        *(ptrOut++) = *(ptrM++) * value;
-    }
+matrix_t * 
+matrix_scale(matrix_t *self, double value) {
+  int i, elements = self->width * self->height;
+  matrix_t *out = matrix_new(self->height, self->width);
+  double *ptr_m = self->data;
+  double *ptr_out = out->data;
 
-    return out;
+  for (i = 0; i < elements; i++) {
+    *(ptr_out++) = *(ptr_m++) * value;
+  }
+
+  return out;
 }
 
-/*===========================================================================
- * rowSwap
+/*
  * Given a matrix, this algorithm will swap rows p and q, provided
  * that p and q are less than or equal to the height of matrix A and p
- * and q are different values.
- *=========================================================================*/
-void rowSwap(matrix* a, int p, int q) {
-    int i;
-    double temp;
-    double* pRow;
-    double* qRow;
+ * and q are different values. TODO(return new matrix)
+ */
 
-    assert(a->height > 2, "Matrix must have at least two rows to swap.");
-    assert(p < a->height && q < a->height, "Values p and q must be less than the height of the matrix.");
+void
+matrix_swap_row(matrix_t *self, int p, int q) {
+  int i;
+  double temp;
+  double *p_row;
+  double *q_row;
 
-    // If p and q are equal, do nothing.
-    if (p == q) {
-        return;
-    }
-
-    pRow = a->data + (p * a->width);
-    qRow = a->data + (q * a->width);
-
-    // Swap!
-    for (i = 0; i < a->width; i++) {
-        temp = *pRow;
-        *pRow = *qRow;
-        *qRow = temp;
-        pRow++;
-        qRow++;
-    }
-
+  // If p and q are equal, do nothing.
+  if (p == q) {
     return;
+  }
+
+  p_row = self->data + (p * self->width);
+  q_row = self->data + (q * self->width);
+
+  // Swap!
+  for (i = 0; i < self->width; i++) {
+    temp = *p_row;
+    *p_row = *q_row;
+    *q_row = temp;
+    p_row++;
+    q_row++;
+  }
+  return;
 }
 
-/*===========================================================================
- * dotProductMatrix
+/*
  * Given a two matrices (or the same matrix twice) with identical widths and
  * different heights, this method returns a a->height by b->height matrix of
  * the cross product of each matrix.
@@ -378,47 +303,43 @@ void rowSwap(matrix* a, int p, int q) {
  *
  * Also, if the second paramter is NULL, it is assumed that we
  * are performing a cross product with itself.
- *=========================================================================*/
-matrix* dotProductMatrix(matrix* a, matrix* b) {
-    matrix* out;
-    double* ptrOut;
-    double* ptrA;
-    double* ptrB;
-    int i, j, k;
+ */
 
-    if (b != NULL) {
-        assert(a->width == b->width, "Matrices must be of the same dimensionality.");
+matrix_t *
+matrix_dot_product(matrix_t *a, matrix_t *b) {
+  matrix_t *out;
+  double *ptr_out;
+  double *ptr_a;
+  double *ptr_b;
+  int i, j, k;
+    
+  // Are we computing the sum of squares of the same matrix?
+  if (a == b || b == NULL) {
+    b = a;
+  }
+
+  out = matrix_new(b->height, a->height);
+  ptr_out = out->data;
+
+  for (i = 0; i < a->height; i++) {
+    ptr_b = b->data;
+
+    for (j = 0; j < b->height; j++) {
+      ptr_a = &a->data[ i * a->width ];
+
+      *ptr_out = 0;
+      for (k = 0; k < a->width; k++) {
+	*ptr_out += *ptr_a * *ptr_b;
+	ptr_a++;
+	ptr_b++;
+      }
+      ptr_out++;
     }
-
-    // Are we computing the sum of squares of the same matrix?
-    if (a == b || b == NULL) {
-        b = a; // May not appear safe, but we can do this without risk of losing b.
-    }
-
-    out = makeMatrix(b->height, a->height);
-    ptrOut = out->data;
-
-    for (i = 0; i < a->height; i++) {
-        ptrB = b->data;
-
-        for (j = 0; j < b->height; j++) {
-            ptrA = &a->data[ i * a->width ];
-
-            *ptrOut = 0;
-            for (k = 0; k < a->width; k++) {
-                *ptrOut += *ptrA * *ptrB;
-                ptrA++;
-                ptrB++;
-            }
-            ptrOut++;
-        }
-    }
-
-    return out;
+  }
+  return out;
 }
 
-/*===========================================================================
- * matrixDotDiagonal
+/*
  * Given a two matrices (or the same matrix twice) with identical widths and
  * heights, this method returns a 1 by a->height matrix of the cross
  * product of each matrix along the diagonal.
@@ -427,37 +348,34 @@ matrix* dotProductMatrix(matrix* a, matrix* b) {
  *
  * If the second paramter is NULL, it is assumed that we
  * are performing a cross product with itself.
- *=========================================================================*/
-matrix* dotDiagonalMatrix(matrix* a, matrix* b) {
-    matrix* out;
-    double* ptrOut;
-    double* ptrA;
-    double* ptrB;
-    int i, j;
+ */
 
-    if (b != NULL) {
-        assert(a->width == b->width && a->height == b->height, "Matrices must be of the same dimensionality.");
+matrix_t * 
+matrix_dot_diagonal(matrix_t* a, matrix_t* b) {
+  matrix_t *out;
+  double *ptr_out;
+  double *ptr_a;
+  double *ptr_b;
+  int i, j;
+
+  // Are we computing the sum of squares of the same matrix?
+  if (a == b || b == NULL) {
+    b = a; // May not appear safe, but we can do this without risk of losing b.
+  }
+
+  out = matrix_new(a->height, 1);
+  ptr_out = out->data;
+  ptr_a = a->data;
+  ptr_b = b->data;
+
+  for (i = 0; i < a->height; i++) {
+    *ptr_out = 0;
+    for (j = 0; j < a->width; j++) {
+      *ptr_out += *ptr_a * *ptr_b;
+      ptr_a++;
+      ptr_b++;
     }
-
-    // Are we computing the sum of squares of the same matrix?
-    if (a == b || b == NULL) {
-        b = a; // May not appear safe, but we can do this without risk of losing b.
-    }
-
-    out = makeMatrix(1, a->height);
-    ptrOut = out->data;
-    ptrA = a->data;
-    ptrB = b->data;
-
-    for (i = 0; i < a->height; i++) {
-        *ptrOut = 0;
-        for (j = 0; j < a->width; j++) {
-            *ptrOut += *ptrA * *ptrB;
-            ptrA++;
-            ptrB++;
-        }
-        ptrOut++;
-    }
-
-    return out;
+    ptr_out++;
+  }
+  return out;
 }

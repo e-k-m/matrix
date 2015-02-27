@@ -1,40 +1,85 @@
-#ifndef __ISOMAP_MATRIX
-#define __ISOMAP_MATRIX
+//
+// matrix.h
+//
+// Copyright (c) 2015 e-k-m
+//
 
-typedef struct _matrix {
+#ifndef MATRIX_H
+#define MATRIX_H
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+// Library version
+
+#define MATRIX_VERSION "0.0.1"
+
+/*
+ * matrix_t struct.
+ */
+
+typedef struct matrix {
     int height;
     int width;
     double* data;
-} matrix;
+} matrix_t;
 
-//============================
-// Stuff I wish C had.
-//============================
-void assert(int assertion, char* message);
+#define ARRAY(...) __VA_ARGS__
 
-//============================
-// Catch and release functions
-//============================
-matrix* readMatrix(char* filename);
-matrix* makeMatrix(int width, int height);
-matrix* copyMatrix(matrix* m);
-void freeMatrix(matrix* m);
-void writeMatrix(matrix* m, char* filename);
-void printMatrix(matrix* m);
+#define MATRIX_SET_ARRAY(M, A) { double _[] = A; matrix_set_from_array(M, _, sizeof(_) / sizeof(*_)); }
 
-//============================
-// Basic Matrix operations
-//============================
-matrix* eyeMatrix(int n);
-double traceMatrix(matrix* m);
-matrix* transposeMatrix(matrix* m);
-matrix* meanMatrix(matrix* m);
-matrix* multiplyMatrix(matrix* a, matrix* b);
-matrix* scaleMatrix(matrix* m, double value);
-matrix* covarianceMatrix(matrix* m);
-void rowSwap(matrix* a, int p, int q); // This method changes the input matrix.
-matrix* dotProductMatrix(matrix* a, matrix* b);
-matrix* dotDiagonalMatrix(matrix* a, matrix* b);
-matrix* L2_distance(matrix* a, matrix* b);
+/*
+ * matrix_t prototypes
+ */
 
-#endif
+matrix_t *
+matrix_new(int height, int width);
+
+matrix_t *
+matrix_copy(matrix_t *self);
+
+void
+matrix_destroy(matrix_t *self);
+
+void
+matrix_print(matrix_t *self);
+
+matrix_t *
+matrix_eye(int n);
+
+void
+matrix_set_from_array(matrix_t *self, double *data, size_t size);
+
+/*
+ * martix_t functions
+ */
+
+double 
+matrix_trace(matrix_t *self);
+
+matrix_t *
+matrix_transpose(matrix_t *self);
+
+matrix_t *
+matrix_mean(matrix_t *self);
+
+matrix_t *
+matrix_multiply(matrix_t *a, matrix_t *b);
+
+matrix_t *
+matrix_scale(matrix_t *self, double value);
+
+void
+matrix_swap_row(matrix_t *self, int p, int q);
+
+matrix_t *
+matrix_covariance(matrix_t *self);
+
+matrix_t *
+matrix_dot_product(matrix_t *a, matrix_t *b);
+
+matrix_t *
+matrix_dot_diagonal(matrix_t *a, matrix_t *b);
+
+#endif /* MATRIX_H */
