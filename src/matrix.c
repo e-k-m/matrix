@@ -87,6 +87,28 @@ matrix_eye(int n) {
   return self;
 }
 
+/*
+ * Get the value at an index.
+ */
+
+double
+matrix_get(matrix_t *self, int i, int j) {
+  return *(self->data + (i * self->width) + j);
+}
+
+/*
+ * Set the value at an index.
+ */
+
+void
+matrix_set(matrix_t *self, int i, int j, double value) {
+  *(self->data + (i * self->width) + j) = value;
+}
+
+/*
+ * Set the values of the matrix from an array.
+ */
+
 void
 matrix_set_from_array(matrix_t *self, double *data, size_t size) {
   double *ptr = self->data;
