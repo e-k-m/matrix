@@ -48,6 +48,12 @@ matrix_print(matrix_t *self);
 matrix_t *
 matrix_eye(int n);
 
+double
+matrix_get(matrix_t *self, int i, int j);
+
+void
+matrix_set(matrix_t *self, int i, int j, double value);
+
 void
 matrix_set_from_array(matrix_t *self, double *data, size_t size);
 

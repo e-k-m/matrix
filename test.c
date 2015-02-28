@@ -78,6 +78,32 @@ test_matrix_print() {
 }
 
 static void
+test_matrix_get() {
+  // Setup
+  matrix_t *a = matrix_eye(2);
+  // Assertions
+  assert(matrix_get(a, 0, 0) == 1.0);
+  assert(matrix_get(a, 0, 1) == 0.0);
+  assert(matrix_get(a, 1, 0) == 0.0);
+  assert(matrix_get(a, 1, 1) == 1.0);
+}
+
+static void
+test_matrix_set() {
+  // Setup
+  matrix_t *a = matrix_new(2, 2);
+  matrix_set(a, 0, 0, 1.0);
+  matrix_set(a, 0, 1, 2.0);
+  matrix_set(a, 1, 0, 3.0);
+  matrix_set(a, 1, 1, 4.0);
+  // Assertions
+  assert(matrix_get(a, 0, 0) == 1.0);
+  assert(matrix_get(a, 0, 1) == 2.0);
+  assert(matrix_get(a, 1, 0) == 3.0);
+  assert(matrix_get(a, 1, 1) == 4.0);
+}
+
+static void
 test_matrix_set_from_array() {
   // Setup
   matrix_t *a = matrix_new(3, 3);
@@ -268,6 +294,8 @@ main(void) {
   test(matrix_print);
   test(matrix_eye);
   test(matrix_set_from_array);
+  test(matrix_get);
+  test(matrix_set);
 
   // Matrix function tests
   test(matrix_trace);
