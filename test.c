@@ -86,10 +86,7 @@ test_matrix_get() {
   assert(matrix_get(a, 0, 1) == 0.0);
   assert(matrix_get(a, 1, 0) == 0.0);
   assert(matrix_get(a, 1, 1) == 1.0);
-<<<<<<< HEAD
   matrix_destroy(a);
-=======
->>>>>>> origin/master
 }
 
 static void
@@ -105,10 +102,7 @@ test_matrix_set() {
   assert(matrix_get(a, 0, 1) == 2.0);
   assert(matrix_get(a, 1, 0) == 3.0);
   assert(matrix_get(a, 1, 1) == 4.0);
-<<<<<<< HEAD
   matrix_destroy(a);
-=======
->>>>>>> origin/master
 }
 
 static void
