@@ -74,6 +74,9 @@ matrix_t *
 matrix_multiply(matrix_t *a, matrix_t *b);
 
 matrix_t *
+matrix_add(matrix_t *a, matrix_t *b);
+
+matrix_t *
 matrix_scale(matrix_t *self, double value);
 
 void

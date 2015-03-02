@@ -56,6 +56,7 @@ matrix_destroy(matrix_t *self) {
 
 void
 matrix_print(matrix_t *self) {
+
   int i, j;
   double *ptr = self->data;
   printf("%d %d\n", self->height, self->width);
@@ -265,6 +266,33 @@ matrix_multiply(matrix_t *a, matrix_t *b) {
   return out;
 }
 
+/*
+ * Given two matrices, returns the addition of the two.
+ * Must be of same dimension.
+ */
+
+matrix_t *
+matrix_add(matrix_t *a, matrix_t *b) {
+  matrix_t *out;
+  double *ptr_out;
+  double *ptr_a;
+  double *ptr_b;
+
+  int height = a->height;
+  int width = a->width;
+  int length = height * width;
+
+  ptr_a = a->data;
+  ptr_b = b->data;
+  out = matrix_new(height, width);  
+  ptr_out = out->data;
+
+  for (int i = 0; i < length; ++i) {
+    *(ptr_out++) = *(ptr_a++) + *(ptr_b++);
+  }
+  return out;
+}
+  
 /*
  * Given a matrix and a double value, this returns a new matrix where 
  * each element in the input matrix is multiplied by the double value

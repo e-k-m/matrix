@@ -238,6 +238,35 @@ test_matrix_multiply(){
   matrix_destroy(g);
 }
 
+static void
+test_matrix_add() {
+  // Setup
+  matrix_t *a = matrix_new(3, 3);
+  MATRIX_SET_ARRAY(a, ARRAY({1.0, 2.0, 3.0,
+	  4.0, 5.0, 6.0,
+	  7.0, 8.0, 9.0}));
+
+  matrix_t *b = matrix_new(3, 3);
+  MATRIX_SET_ARRAY(b, ARRAY({1.0, 2.0, 3.0,
+	  4.0, 5.0, 6.0,
+	  7.0, 8.0, 9.0}));
+
+  matrix_t *c = matrix_new(3, 3);
+  MATRIX_SET_ARRAY(c, ARRAY({2.0, 4.0, 6.0,
+	  8.0, 10.0, 12.0,
+	  14.0, 16.0, 18.0}));
+
+
+  matrix_t *d = matrix_add(a, b);  
+
+  // Assertions
+  assert(matrix_equal(c, d) == 1);
+  matrix_destroy(a);
+  matrix_destroy(b);
+  matrix_destroy(c);
+  matrix_destroy(d);  
+}
+
 static void 
 test_matrix_scale() {
 
@@ -304,6 +333,7 @@ main(void) {
   test(matrix_transpose);
   test(matrix_mean);
   test(matrix_multiply);
+  test(matrix_add);
   test(matrix_scale);
   test(matrix_swap_row);
 
