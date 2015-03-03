@@ -25,9 +25,7 @@ typedef struct matrix {
     double* data;
 } matrix_t;
 
-#define ARRAY(...) __VA_ARGS__
-
-#define MATRIX_SET_ARRAY(M, A) { double _[] = A; matrix_set_from_array(M, _, sizeof(_) / sizeof(*_)); }
+#define ARRAY(...) ((double []){__VA_ARGS__})
 
 /*
  * matrix_t prototypes
@@ -35,6 +33,9 @@ typedef struct matrix {
 
 matrix_t *
 matrix_new(int height, int width);
+
+matrix_t *
+matrix_from_array(int height, int width, double *data);
 
 matrix_t *
 matrix_copy(matrix_t *self);

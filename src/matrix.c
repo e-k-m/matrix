@@ -27,6 +27,17 @@ matrix_new(int height, int width) {
   return self;
 }
 
+/*
+ * Allocate a new matrix_t from an array.
+ */
+
+matrix_t *
+matrix_from_array(int height, int width, double *data) {
+  matrix_t *self;
+  self = matrix_new(height, width);
+  matrix_set_from_array(self, data, height * width);
+  return self;
+}
 
 /*
  * Copy a matrix.

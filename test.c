@@ -45,6 +45,20 @@ test_matrix_new() {
   matrix_destroy(m);
 }
 
+static void 
+test_matrix_from_array() {
+  // Setup
+  matrix_t *a = matrix_eye(3);
+  matrix_t *b = matrix_from_array(3, 3, ARRAY(1.0, 0.0, 0.0, 
+					      0.0, 1.0, 0.0, 
+					      0.0, 0.0, 1.0));
+
+  // Assertions
+  assert(matrix_equal(a, b) == 1);
+  matrix_destroy(a);
+  matrix_destroy(b);
+}
+
 static void
 test_matrix_copy() {
   // Setup
@@ -131,11 +145,9 @@ static void
 test_matrix_eye() {
   // Setup
   matrix_t *a = matrix_eye(3);
-  matrix_t *b = matrix_new(3, 3);
-
-  MATRIX_SET_ARRAY(b, ARRAY({1.0, 0.0, 0.0,
-	                     0.0, 1.0, 0.0,
-	                     0.0, 0.0, 1.0}));
+  matrix_t *b = matrix_from_array(3, 3, ARRAY(1.0, 0.0, 0.0, 
+					      0.0, 1.0, 0.0, 
+					      0.0, 0.0, 1.0));
 
   // Assertions
   assert(matrix_equal(a, b) == 1);
@@ -156,15 +168,13 @@ test_matrix_trace() {
 static void 
 test_matrix_transpose() {
   // Setup
-  matrix_t *a = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(a, ARRAY({1.0, 2.0, 3.0,
-	                     4.0, 5.0, 6.0, 
-	                     7.0, 8.0, 9.0}));
+  matrix_t *a = matrix_from_array(3, 3, ARRAY(1.0, 2.0, 3.0,
+					      4.0, 5.0, 6.0, 
+					      7.0, 8.0, 9.0));
 
-  matrix_t *b = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(b, ARRAY({1.0, 4.0, 7.0,
-	                     2.0, 5.0, 8.0, 
-	                     3.0, 6.0, 9.0}));
+  matrix_t *b = matrix_from_array(3, 3, ARRAY(1.0, 4.0, 7.0,
+					      2.0, 5.0, 8.0, 
+					      3.0, 6.0, 9.0));
 
   matrix_t *c = matrix_transpose(a);
 
@@ -178,13 +188,11 @@ test_matrix_transpose() {
 static void 
 test_matrix_mean() {
   // Setup
-  matrix_t *a = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(a, ARRAY({1.0, 2.0, 3.0,
-            	             1.0, 2.0, 3.0,
-	                     1.0, 2.0, 3.0}));
+  matrix_t *a = matrix_from_array(3, 3, ARRAY(1.0, 2.0, 3.0,
+					      1.0, 2.0, 3.0,
+					      1.0, 2.0, 3.0));
 
-  matrix_t *b = matrix_new(1, 3);
-  MATRIX_SET_ARRAY(b, ARRAY({1.0, 2.0, 3.0}));
+  matrix_t *b = matrix_from_array(1, 3, ARRAY(1.0, 2.0, 3.0));
 
   matrix_t *c = matrix_mean(a);
 
@@ -199,28 +207,22 @@ static void
 test_matrix_multiply(){
   
   // Setup for matrix * vector
-  matrix_t *a = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(a, ARRAY({1.0, 2.0, 3.0,
-	                     4.0, 5.0, 6.0,
-	                     7.0, 8.0, 9.0}));
+  matrix_t *a = matrix_from_array(3, 3, ARRAY(1.0, 2.0, 3.0,
+					      4.0, 5.0, 6.0,
+					      7.0, 8.0, 9.0));
 
-  matrix_t *b = matrix_new(3, 1);
-  MATRIX_SET_ARRAY(b, ARRAY({1.0, 2.0, 3.0}));
+  matrix_t *b = matrix_from_array(3, 1, ARRAY(1.0, 2.0, 3.0));
   
-  matrix_t *c = matrix_new(3, 1);
-  MATRIX_SET_ARRAY(c, ARRAY({14.0, 32.0, 50.0}));
+  matrix_t *c = matrix_from_array(3, 1, ARRAY(14.0, 32.0, 50.0));
 
    // Setup for matrix * matrix
+  matrix_t *d = matrix_from_array(3, 2, ARRAY(1.0, 1.0, 
+					      2.0, 2.0,
+					      3.0, 3.0));
 
-   matrix_t *d = matrix_new(3, 2);
-   MATRIX_SET_ARRAY(d, ARRAY({1.0, 1.0, 
-	                      2.0, 2.0,
-                              3.0, 3.0}));
-
-  matrix_t *e = matrix_new(3, 2);
-  MATRIX_SET_ARRAY(e, ARRAY({14.0, 14.0, 
-	                     32.0, 32.0,
-                             50.0, 50.0}));
+  matrix_t *e = matrix_from_array(3, 2, ARRAY(14.0, 14.0, 
+					     32.0, 32.0,
+					     50.0, 50.0));
 
   matrix_t *f = matrix_multiply(a, b);  
   matrix_t *g = matrix_multiply(a, d);  
@@ -241,20 +243,17 @@ test_matrix_multiply(){
 static void
 test_matrix_add() {
   // Setup
-  matrix_t *a = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(a, ARRAY({1.0, 2.0, 3.0,
-	  4.0, 5.0, 6.0,
-	  7.0, 8.0, 9.0}));
+  matrix_t *a = matrix_from_array(3, 3, ARRAY(1.0, 2.0, 3.0,
+					      4.0, 5.0, 6.0,
+					      7.0, 8.0, 9.0));
 
-  matrix_t *b = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(b, ARRAY({1.0, 2.0, 3.0,
-	  4.0, 5.0, 6.0,
-	  7.0, 8.0, 9.0}));
+  matrix_t *b = matrix_from_array(3, 3, ARRAY(1.0, 2.0, 3.0,
+				4.0, 5.0, 6.0,
+				7.0, 8.0, 9.0));
 
-  matrix_t *c = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(c, ARRAY({2.0, 4.0, 6.0,
-	  8.0, 10.0, 12.0,
-	  14.0, 16.0, 18.0}));
+  matrix_t *c = matrix_from_array(3, 3, ARRAY(2.0, 4.0, 6.0,
+					      8.0, 10.0, 12.0,
+					      14.0, 16.0, 18.0));
 
 
   matrix_t *d = matrix_add(a, b);  
@@ -271,17 +270,15 @@ static void
 test_matrix_scale() {
 
   // Setup
-  matrix_t *a = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(a, ARRAY({1.0, 2.0, 3.0,
-	                     4.0, 5.0, 6.0,
-	                     7.0, 8.0, 9.0}));
+  matrix_t *a = matrix_from_array(3, 3, ARRAY(1.0, 2.0, 3.0,
+					      4.0, 5.0, 6.0,
+					      7.0, 8.0, 9.0));
 
   matrix_t *b = matrix_scale(a, 2.0);
 
-  matrix_t *c = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(c, ARRAY({2.0, 4.0, 6.0,
-	                     8.0, 10.0, 12.0,
-	                     14.0, 16.0, 18.0}));
+  matrix_t *c = matrix_from_array(3, 3, ARRAY(2.0, 4.0, 6.0,
+					      8.0, 10.0, 12.0,
+					      14.0, 16.0, 18.0));
   
   // Assertions
   assert(matrix_equal(b, c) == 1);
@@ -296,15 +293,13 @@ test_matrix_scale() {
 static void
 test_matrix_swap_row() {
   // Setup
-  matrix_t *a = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(a, ARRAY({1.0, 2.0, 3.0,
-	                     4.0, 5.0, 6.0,
-	                     7.0, 8.0, 9.0}));
+  matrix_t *a = matrix_from_array(3, 3, ARRAY(1.0, 2.0, 3.0,
+					      4.0, 5.0, 6.0,
+					      7.0, 8.0, 9.0));
   
-  matrix_t *b = matrix_new(3, 3);
-  MATRIX_SET_ARRAY(b, ARRAY({4.0, 5.0, 6.0,
-	                     1.0, 2.0, 3.0,
-	                     7.0, 8.0, 9.0}));
+  matrix_t *b = matrix_from_array(3, 3, ARRAY(4.0, 5.0, 6.0,
+					      1.0, 2.0, 3.0,
+					      7.0, 8.0, 9.0));
 
   matrix_swap_row(a, 0, 1);
   
@@ -327,6 +322,7 @@ main(void) {
   test(matrix_set_from_array);
   test(matrix_get);
   test(matrix_set);
+  test(matrix_from_array);
 
   // Matrix function tests
   test(matrix_trace);
