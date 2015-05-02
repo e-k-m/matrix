@@ -30,7 +30,7 @@ bin/test: test.o $(OBJS)
 	$(CC) $< $(CFLAGS) -c -o $@
 
 clean:
-	rm -fr bin build *.o src/*.o
+	rm -fr *.o bin build *.o src/*.o
 
 test: bin/test
 	@./$<
