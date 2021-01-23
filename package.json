@@ -1,8 +1,8 @@
 {
   "name": "matrix",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "repo": "e-k-m/matrix",
-  "description": "C matrix implementation",
+  "description": "simple C matrix implementation",
   "keywords": ["matrix"],
   "license": "MIT",
   "src": ["src/matrix.c", "src/matrix.h"]
